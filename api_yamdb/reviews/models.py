@@ -1,6 +1,10 @@
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.conf import settings
+
+from api.v1.constants import MAX_SCORE, MIN_SCORE
+
+from .utils import _current_year
 
 
 class Category(models.Model):
@@ -33,33 +37,34 @@ class Genre(models.Model):
         return self.name
 
 
-def _current_year() -> int:
-    # Делаем валидатор "живым":
-    # чтобы при старте в новом году не требовалась правка миграций.
-    from datetime import date
-
-    return date.today().year
-
 
 class Title(models.Model):
     """Произведение (книга/фильм/музыка), к которому оставляют отзывы."""
 
     name = models.CharField(max_length=256)
     year = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(_current_year)],
+        validators=[
+            MinValueValidator(
+                0, 
+                message = 'Год выпуска не может быть отрицательным'
+            ), 
+            MaxValueValidator(
+                _current_year, 
+                message = 'Год выпуска не может быть в будующем'
+            )
+        ],
         verbose_name="Год выпуска",
     )
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
-        null=True,
         blank=True,
+        null=True,
         related_name="titles",
     )
     genre = models.ManyToManyField(
         Genre,
-        through="GenreTitle",
         related_name="titles",
     )
 
@@ -70,19 +75,6 @@ class Title(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
-
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=("genre", "title"),
-                name="unique_genre_title",
-            )
-        ]
 
 
 class Review(models.Model):
@@ -100,7 +92,7 @@ class Review(models.Model):
         verbose_name="Автор",
     )
     score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        validators=[MinValueValidator(MIN_SCORE), MaxValueValidator(MAX_SCORE)],
         verbose_name="Оценка",
     )
     pub_date = models.DateTimeField(
