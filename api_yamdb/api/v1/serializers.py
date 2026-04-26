@@ -71,7 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
-    
+
     def validate_username(self, value):
         if value.lower() == 'me':
             raise serializers.ValidationError('Использовать "me" запрещено.')
