@@ -2,11 +2,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
+
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import validate_username
 
-
 User = get_user_model()
+
 
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
@@ -38,7 +39,7 @@ class SignupSerializer(serializers.Serializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
-    
+
     def validate(self, data):
         """Проверка confirmation_code."""
         username = data.get('username')
@@ -49,12 +50,12 @@ class TokenSerializer(serializers.Serializer):
             raise NotFound(
                 {'username': 'Пользователь с таким username не найден.'}
             )
-        
+
         if not default_token_generator.check_token(user, confirmation_code):
             raise serializers.ValidationError(
                 {'confirmation_code': 'Неверный код подтверждения.'}
             )
-        
+
         data['user'] = user
         return data
 
@@ -74,7 +75,8 @@ class UserSerializer(serializers.ModelSerializer):
         if value.lower() == 'me':
             raise serializers.ValidationError('Использовать имя "me" запрещено.')
         return value
-    
+
+
 class MeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -90,7 +92,7 @@ class MeSerializer(serializers.ModelSerializer):
 
 
 # Поле lookup_field задаёт поле модели для поиска объектов вместо pk.
-# Подробнее: https://www.django-rest-framework.org/api-guide/serializers/#specifying-which-fields-to-include
+# https://www.django-rest-framework.org/api-guide/serializers/#specifying-which-fields-to-include
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
 
@@ -177,7 +179,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
 
-
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев к отзывам."""
 
@@ -191,14 +192,15 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date')
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для редактирования профиля пользователя."""
-    
+
     class Meta: 
         model = User 
         fields = ['email', 'first_name', 'last_name']
-    
-    
+
+
     def validate_email(self, value):
         """Валидация email."""
         user = self.context['request'].user
@@ -207,4 +209,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 'Пользователь с таким email уже существует.'
             )
         return value
-

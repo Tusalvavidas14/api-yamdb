@@ -2,8 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-
 from api.v1.constants import MAX_LENGTH_USERNAME
+
 
 class User(AbstractUser):
     USER = 'user'
@@ -53,7 +53,7 @@ class User(AbstractUser):
         ordering = ('id',)
         verbose_name = "Пользователь"
         verbose_name_plural = 'Пользователи'
-    
+
     def __str__(self):
         return self.username
 
@@ -64,4 +64,3 @@ class User(AbstractUser):
     @property
     def is_moderator(self):
         return self.role == self.MODERATOR
-

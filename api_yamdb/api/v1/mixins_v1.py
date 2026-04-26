@@ -1,10 +1,9 @@
-from rest_framework.mixins import RetrieveModelMixin, ListModelMixin
 from rest_framework.response import Response
 
 
 class PatchModelMixin:
     """Обеспечивает частичную модификацию объекта (`PATCH`)."""
-    
+
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         partial = True  # Ключевой момент: частичное обновление
@@ -15,8 +14,8 @@ class PatchModelMixin:
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        
+
         if getattr(instance, '_prefetched_objects_cache', None):
             instance._prefetched_objects_cache = {}
-        
+
         return Response(serializer.data)

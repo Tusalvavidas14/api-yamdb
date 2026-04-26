@@ -14,7 +14,7 @@ class IsAdminOrReadOnlyPermission(BasePermission):
             return True
 
         user = request.user
-        
+
         if not request.user.is_authenticated:
             return False
 

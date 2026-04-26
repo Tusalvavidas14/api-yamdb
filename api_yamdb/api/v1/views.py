@@ -1,5 +1,3 @@
-from django.contrib.auth.tokens import default_token_generator
-from django.core.exceptions import FieldError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,15 +5,17 @@ from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from .mixins_v1 import PatchModelMixin
+
 from .filters import TitleFilter
-from .permissions import (
-    IsAdminPermission as IsAdmin,
-    IsAdminOrReadOnlyPermission as IsAdminOrReadOnly,
-    IsAuthorModeratorAdminOrReadOnlyPermission as IsAuthorModeratorAdminOrReadOnly
-)
+from .mixins_v1 import PatchModelMixin
+from .permissions import IsAdminOrReadOnlyPermission as IsAdminOrReadOnly
+from .permissions import IsAdminPermission as IsAdmin
+from .permissions import \
+    IsAuthorModeratorAdminOrReadOnlyPermission as \
+    IsAuthorModeratorAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, MeSerializer, ReviewSerializer,
                           SignupSerializer, TitleCreateUpdateSerializer,
@@ -36,7 +36,7 @@ def signup(request):
         username=username,
         defaults={'email': email},
     )
-    
+
     send_confirmation_code(user)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -50,7 +50,7 @@ def get_token(request):
 
     user = serializer.validated_data['user']
     token = AccessToken.for_user(user)
-    
+
     return Response(
         {'token': str(token)},
         status=status.HTTP_200_OK,
@@ -63,8 +63,9 @@ class UserViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.DestroyModelMixin,
-    viewsets.GenericViewSet):
-    
+    viewsets.GenericViewSet
+):
+
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
@@ -101,8 +102,8 @@ class UserViewSet(
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save(role=user.role)  
-        
+        serializer.save(role=user.role)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -153,7 +154,6 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset().annotate(rating=Avg("reviews__score"))
-
 
     def get_serializer_class(self):
         """Выбор сериализатора в зависимости от действия."""

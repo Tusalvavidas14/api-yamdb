@@ -1,8 +1,10 @@
-from pathlib import Path 
-from dotenv import load_dotenv
-import sys
 import os
-from api.v1.constants import PAGINATION_PAGE_SIZE 
+import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+from api.v1.constants import PAGINATION_PAGE_SIZE
 
 load_dotenv()
 
@@ -11,11 +13,11 @@ if not SECRET_KEY:
     print("Ошибка: SECRET_KEY не найден в .env файле!")
     sys.exit(1)
 
-BASE_DIR = Path(__file__).resolve().parent.parent 
- 
-SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs' 
- 
-DEBUG = False 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
+
+DEBUG = False
 
 
 ALLOWED_HOSTS = ['*']
@@ -106,7 +108,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': PAGINATION_PAGE_SIZE ,
+    'PAGE_SIZE': PAGINATION_PAGE_SIZE,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],

@@ -37,7 +37,6 @@ class Genre(models.Model):
         return self.name
 
 
-
 class Title(models.Model):
     """Произведение (книга/фильм/музыка), к которому оставляют отзывы."""
 
@@ -46,11 +45,11 @@ class Title(models.Model):
         validators=[
             MinValueValidator(
                 0, 
-                message = 'Год выпуска не может быть отрицательным'
-            ), 
+                message='Год выпуска не может быть отрицательным'
+            ),
             MaxValueValidator(
-                _current_year, 
-                message = 'Год выпуска не может быть в будующем'
+                _current_year,
+                message='Год выпуска не может быть в будующем'
             )
         ],
         verbose_name="Год выпуска",
@@ -92,7 +91,9 @@ class Review(models.Model):
         verbose_name="Автор",
     )
     score = models.IntegerField(
-        validators=[MinValueValidator(MIN_SCORE), MaxValueValidator(MAX_SCORE)],
+        validators=[
+            MinValueValidator(MIN_SCORE), 
+            MaxValueValidator(MAX_SCORE)],
         verbose_name="Оценка",
     )
     pub_date = models.DateTimeField(
