@@ -75,7 +75,7 @@ class UserViewSet(
 
     def perform_update(self, serializer):
         serializer.save()
-    
+
     @action(
         detail=False,
         methods=['get'],

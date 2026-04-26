@@ -71,9 +71,10 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
+    
     def validate_username(self, value):
         if value.lower() == 'me':
-            raise serializers.ValidationError('Использовать имя "me" запрещено.')
+            raise serializers.ValidationError('Использовать "me" запрещено.')
         return value
 
 
@@ -196,10 +197,9 @@ class CommentSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для редактирования профиля пользователя."""
 
-    class Meta: 
-        model = User 
+    class Meta:
+        model = User
         fields = ['email', 'first_name', 'last_name']
-
 
     def validate_email(self, value):
         """Валидация email."""

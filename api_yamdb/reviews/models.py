@@ -44,7 +44,7 @@ class Title(models.Model):
     year = models.PositiveSmallIntegerField(
         validators=[
             MinValueValidator(
-                0, 
+                0,
                 message='Год выпуска не может быть отрицательным'
             ),
             MaxValueValidator(
@@ -92,7 +92,7 @@ class Review(models.Model):
     )
     score = models.IntegerField(
         validators=[
-            MinValueValidator(MIN_SCORE), 
+            MinValueValidator(MIN_SCORE),
             MaxValueValidator(MAX_SCORE)],
         verbose_name="Оценка",
     )
