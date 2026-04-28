@@ -1,5 +1,7 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
@@ -7,21 +9,28 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Review, Title
-from users.models import User
 
 from .filters import TitleFilter
-from .mixins_v1 import PatchModelMixin
-from .permissions import IsAdminOrReadOnlyPermission as IsAdminOrReadOnly
-from .permissions import IsAdminPermission as IsAdmin
-from .permissions import \
-    IsAuthorModeratorAdminOrReadOnlyPermission as \
-    IsAuthorModeratorAdminOrReadOnly
-from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, MeSerializer, ReviewSerializer,
-                          SignupSerializer, TitleCreateUpdateSerializer,
-                          TitleSerializer, TokenSerializer, UserSerializer)
+from .mixins import CustomUserViewSet
+from .permissions import ( 
+IsAdminOrReadOnlyPermission as IsAdminOrReadOnly,
+IsAdminPermission as IsAdmin,
+IsAuthorModeratorAdminOrReadOnlyPermission as IsAuthorModeratorAdminOrReadOnly
+)
+from .serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    SignupSerializer,
+    TitleCreateUpdateSerializer,
+    TitleSerializer,
+    TokenSerializer,
+    UserSerializer
+)
 from .utils import send_confirmation_code
 
+User = get_user_model()
 
 @api_view(['POST'])
 @permission_classes((permissions.AllowAny,))
@@ -29,14 +38,7 @@ def signup(request):
     serializer = SignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    username = serializer.validated_data['username']
-    email = serializer.validated_data['email']
-
-    user, created = User.objects.get_or_create(
-        username=username,
-        defaults={'email': email},
-    )
-
+    user = serializer.save()
     send_confirmation_code(user)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -57,24 +59,13 @@ def get_token(request):
     )
 
 
-class UserViewSet(
-    PatchModelMixin,
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
-
+class UserViewSet(CustomUserViewSet):
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-
-    def perform_update(self, serializer):
-        serializer.save()
 
     @action(
         detail=False,
@@ -84,19 +75,13 @@ class UserViewSet(
     )
     def me(self, request):
         user = request.user
-        serializer = MeSerializer(user)
+        serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(
-        detail=False,
-        methods=['patch'],
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='me',
-    )
     @me.mapping.patch
     def me_patch(self, request):
         user = request.user
-        serializer = MeSerializer(
+        serializer = UserSerializer(
             user,
             data=request.data,
             partial=True,
@@ -108,12 +93,13 @@ class UserViewSet(
 
 
 class CategoryViewSet(
-    mixins.ListModelMixin,
     mixins.CreateModelMixin,
+    mixins.ListModelMixin,
     mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
+    viewsets.GenericViewSet
 ):
     """ViewSet для категорий."""
+    
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -123,24 +109,26 @@ class CategoryViewSet(
 
 
 class GenreViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
+    mixins.ListModelMixin, 
+    mixins.CreateModelMixin, 
+    mixins.DestroyModelMixin, 
     viewsets.GenericViewSet,
 ):
     """ViewSet для жанров."""
+    
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    # Поле lookup_field задаёт поле модели для поиска объектов вместо pk.
+    # https://www.django-rest-framework.org/api-guide/serializers/#specifying-which-fields-to-include
     lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """ViewSet для произведений."""
-    queryset = Title.objects.all()
-    permission_classes = (IsAdminOrReadOnly,)
+    queryset = Title.objects.annotate(rating=Avg("reviews__score"))
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -150,10 +138,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
     ordering = ('name',)
-    http_method_names = ['get', 'post', 'patch', 'delete']
-
-    def get_queryset(self):
-        return super().get_queryset().annotate(rating=Avg("reviews__score"))
 
     def get_serializer_class(self):
         """Выбор сериализатора в зависимости от действия."""
@@ -167,8 +151,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
-
+    
     def get_title(self):
         """Получение произведения по title_id."""
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -189,7 +172,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_review(self):
         """Получение отзыва по review_id и title_id."""

@@ -2,7 +2,13 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api.v1.constants import MAX_SCORE, MIN_SCORE
+from api_yamdb.constants import (
+    MAX_LENGHT_NAME_IN_PROJECT,
+    MAX_SLUG_IN_PROJECT,
+    MAX_SCORE,
+    MIN_SCORE,
+    MIN_YEAR,
+)
 
 from .utils import _current_year
 
@@ -10,8 +16,8 @@ from .utils import _current_year
 class Category(models.Model):
     """Категория (тип) произведения."""
 
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField(max_length=MAX_LENGHT_NAME_IN_PROJECT)
+    slug = models.SlugField(max_length=MAX_SLUG_IN_PROJECT, unique=True)
 
     class Meta:
         verbose_name = "Категория"
@@ -25,8 +31,8 @@ class Category(models.Model):
 class Genre(models.Model):
     """Жанр произведения."""
 
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField(max_length=MAX_LENGHT_NAME_IN_PROJECT)
+    slug = models.SlugField(max_length=MAX_SLUG_IN_PROJECT, unique=True)
 
     class Meta:
         verbose_name = "Жанр"
@@ -40,11 +46,11 @@ class Genre(models.Model):
 class Title(models.Model):
     """Произведение (книга/фильм/музыка), к которому оставляют отзывы."""
 
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=MAX_LENGHT_NAME_IN_PROJECT)
     year = models.PositiveSmallIntegerField(
         validators=[
             MinValueValidator(
-                0,
+                MIN_YEAR,
                 message='Год выпуска не может быть отрицательным'
             ),
             MaxValueValidator(

@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from api.v1.constants import MAX_LENGTH_USERNAME
+from api_yamdb.constants import MAX_LENGTH_USERNAME
 
 
 class User(AbstractUser):
@@ -59,7 +59,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN or self.is_staff
+        return self.role == self.ADMIN or self.is_staff or self.is_superuser
 
     @property
     def is_moderator(self):

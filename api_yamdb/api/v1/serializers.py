@@ -2,18 +2,19 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
-
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.validators import validate_username
+
+from api_yamdb.constants import MAX_LENGHT_EMAIL, MAX_LENGTH_USERNAME
+
+from .mixins import UsernameValidationMixin
 
 User = get_user_model()
 
 
-class SignupSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=254)
+class SignupSerializer(UsernameValidationMixin, serializers.Serializer):
+    email = serializers.EmailField(max_length=MAX_LENGHT_EMAIL)
     username = serializers.CharField(
-        max_length=150,
-        validators=[validate_username],
+        max_length=MAX_LENGTH_USERNAME,
     )
 
     def validate(self, data):
@@ -34,6 +35,13 @@ class SignupSerializer(serializers.Serializer):
             )
 
         return data
+    
+    def create(self,validated_data):
+        user, created = User.objects.get_or_create(
+            username=validated_data['username'],
+            defaults={'email': validated_data['email']},
+        )
+        return user
 
 
 class TokenSerializer(serializers.Serializer):
@@ -60,7 +68,7 @@ class TokenSerializer(serializers.Serializer):
         return data
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(UsernameValidationMixin, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
@@ -71,36 +79,17 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
-
-    def validate_username(self, value):
-        if value.lower() == 'me':
-            raise serializers.ValidationError('Использовать "me" запрещено.')
-        return value
+        extra_kwargs = {
+            'role': {'read_only': True},
+        }
 
 
-class MeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role',
-        )
-        read_only_fields = ('role',)
-
-
-# Поле lookup_field задаёт поле модели для поиска объектов вместо pk.
-# https://www.django-rest-framework.org/api-guide/serializers/#specifying-which-fields-to-include
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
 
     class Meta:
         model = Category
         fields = ('name', 'slug')
-        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -109,7 +98,7 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
-        lookup_field = 'slug'
+
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -192,20 +181,3 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date')
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    """Сериализатор для редактирования профиля пользователя."""
-
-    class Meta:
-        model = User
-        fields = ['email', 'first_name', 'last_name']
-
-    def validate_email(self, value):
-        """Валидация email."""
-        user = self.context['request'].user
-        if User.objects.exclude(pk=user.pk).filter(email=value).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует.'
-            )
-        return value

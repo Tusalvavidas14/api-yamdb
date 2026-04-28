@@ -4,7 +4,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from api.v1.constants import PAGINATION_PAGE_SIZE
+from api_yamdb.constants import PAGINATION_PAGE_SIZE
 
 load_dotenv()
 
