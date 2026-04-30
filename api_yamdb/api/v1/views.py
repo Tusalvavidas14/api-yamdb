@@ -15,7 +15,8 @@ from .mixins import CustomUserViewSet
 from .permissions import (
     IsAdminOrReadOnlyPermission as IsAdminOrReadOnly,
     IsAdminPermission as IsAdmin,
-    IsAuthorModeratorAdminOrReadOnlyPermission as IsAuthorModeratorAdminOrReadOnly
+    IsAuthorModeratorAdminOrReadOnlyPermission as
+    IsAuthorModeratorAdminOrReadOnly
 )
 from .serializers import (
     CategorySerializer,
@@ -94,7 +95,6 @@ class UserViewSet(CustomUserViewSet):
     def perform_update(self, serializer):
         """Обновление пользователя."""
         serializer.save()
-
 
 
 class CategoryViewSet(
