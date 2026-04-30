@@ -37,8 +37,8 @@ class SignupSerializer(UsernameValidationMixin, serializers.Serializer):
             )
 
         return data
-    
-    def create(self,validated_data):
+
+    def create(self, validated_data):
         user, created = User.objects.get_or_create(
             username=validated_data['username'],
             defaults={'email': validated_data['email']},
@@ -75,6 +75,7 @@ class UserSerializer(UsernameValidationMixin, serializers.ModelSerializer):
         choices=User.ROLE_CHOICES,
         required=False
     )
+
     class Meta:
         model = User
         fields = (
@@ -85,6 +86,7 @@ class UserSerializer(UsernameValidationMixin, serializers.ModelSerializer):
             'bio',
             'role',
         )
+
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
@@ -100,7 +102,6 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
-
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -135,7 +136,6 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True
     )
-
 
     class Meta:
         model = Title

@@ -2,6 +2,7 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 
+
 class PatchModelMixin:
     """Обеспечивает частичную модификацию объекта (`PATCH`)."""
 
@@ -27,7 +28,7 @@ class UsernameValidationMixin:
 
     def validate_username(self, value):
         if value.lower() == 'me':
-            raise serializers.ValidationError('Использовать имя "me" запрещено.')
+            raise serializers.ValidationError('Использовать "me" запрещено.')
         return value
 
 
@@ -40,6 +41,7 @@ class CustomUserViewSet(
     viewsets.GenericViewSet
 ):
     pass
+
 
 class NoPutMixin:
     """Миксин запрещающий PUT запросы."""

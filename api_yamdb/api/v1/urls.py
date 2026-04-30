@@ -5,22 +5,23 @@ from .views import (CategoryViewSet, CommentViewSet, GenreViewSet,
                     ReviewViewSet, TitleViewSet, UserViewSet, get_token,
                     signup)
 
-router = DefaultRouter() 
-router.register(r'users', UserViewSet, basename='users') 
-router.register(r'categories', CategoryViewSet, basename='categories') 
-router.register(r'genres', GenreViewSet, basename='genres') 
+router = DefaultRouter()
+router.register(r'users', UserViewSet, basename='users')
+router.register(r'categories', CategoryViewSet, basename='categories')
+router.register(r'genres', GenreViewSet, basename='genres')
 router.register(r'titles', TitleViewSet, basename='titles')
 router.register(r'titles/(?P<title_id>[^/.]+)/reviews',
-    ReviewViewSet,
-    basename='reviews'
+        ReviewViewSet,
+        basename='reviews'
 )
-router.register(r'titles/(?P<title_id>[^/.]+)/reviews/(?P<review_id>[^/.]+)/comments', 
-    CommentViewSet, 
-    basename='comments'
+router.register(
+        r'titles/(?P<title_id>[^/.]+)/reviews/(?P<review_id>[^/.]+)/comments',
+        CommentViewSet,
+        basename='comments'
 )
 
-urlpatterns = [ 
-    path('auth/signup/', signup, name='signup'), 
-    path('auth/token/', get_token, name='token'), 
+urlpatterns = [
+    path('auth/signup/', signup, name='signup'),
+    path('auth/token/', get_token, name='token'),
     path('', include(router.urls)),
-] 
+]

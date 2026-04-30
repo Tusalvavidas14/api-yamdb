@@ -11,11 +11,11 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
 
 from .filters import TitleFilter
-from .mixins import CustomUserViewSet, NoPutMixin
-from .permissions import ( 
-IsAdminOrReadOnlyPermission as IsAdminOrReadOnly,
-IsAdminPermission as IsAdmin,
-IsAuthorModeratorAdminOrReadOnlyPermission as IsAuthorModeratorAdminOrReadOnly
+from .mixins import CustomUserViewSet
+from .permissions import (
+    IsAdminOrReadOnlyPermission as IsAdminOrReadOnly,
+    IsAdminPermission as IsAdmin,
+    IsAuthorModeratorAdminOrReadOnlyPermission as IsAuthorModeratorAdminOrReadOnly
 )
 from .serializers import (
     CategorySerializer,
@@ -31,6 +31,7 @@ from .serializers import (
 from .utils import send_confirmation_code
 
 User = get_user_model()
+
 
 @api_view(['POST'])
 @permission_classes((permissions.AllowAny,))
@@ -89,7 +90,7 @@ class UserViewSet(CustomUserViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def perform_update(self, serializer):
         """Обновление пользователя."""
         serializer.save()
@@ -103,7 +104,7 @@ class CategoryViewSet(
     viewsets.GenericViewSet
 ):
     """ViewSet для категорий."""
-    
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -113,13 +114,13 @@ class CategoryViewSet(
 
 
 class GenreViewSet(
-    mixins.ListModelMixin, 
-    mixins.CreateModelMixin, 
-    mixins.DestroyModelMixin, 
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """ViewSet для жанров."""
-    
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -132,7 +133,7 @@ class GenreViewSet(
 
 class TitleViewSet(viewsets.ModelViewSet):
     """ViewSet для произведений."""
-    
+
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
     queryset = Title.objects.annotate(rating=Avg("reviews__score"))
     filter_backends = (
@@ -151,7 +152,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('create', 'update', 'partial_update'):
             return TitleCreateUpdateSerializer
         return TitleSerializer
-    
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для отзывов."""
@@ -159,7 +160,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
-    
+
     def get_title(self):
         """Получение произведения по title_id."""
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))

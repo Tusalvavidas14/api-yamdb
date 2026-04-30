@@ -22,6 +22,7 @@ class IsAdminOrReadOnlyPermission(IsAdminPermission):
 
         return super().has_permission(request, view)
 
+
 class IsAuthorModeratorAdminOrReadOnlyPermission(BasePermission):
     """Изменение доступно автору, модератору и администратору."""
 
