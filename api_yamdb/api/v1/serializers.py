@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 from reviews.models import Category, Comment, Genre, Review, Title
@@ -15,6 +16,7 @@ class SignupSerializer(UsernameValidationMixin, serializers.Serializer):
     email = serializers.EmailField(max_length=MAX_LENGHT_EMAIL)
     username = serializers.CharField(
         max_length=MAX_LENGTH_USERNAME,
+        validators=[UnicodeUsernameValidator()]
     )
 
     def validate(self, data):
@@ -69,6 +71,10 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(UsernameValidationMixin, serializers.ModelSerializer):
+    role = serializers.ChoiceField(
+        choices=User.ROLE_CHOICES,
+        required=False
+    )
     class Meta:
         model = User
         fields = (
@@ -79,10 +85,6 @@ class UserSerializer(UsernameValidationMixin, serializers.ModelSerializer):
             'bio',
             'role',
         )
-        extra_kwargs = {
-            'role': {'read_only': True},
-        }
-
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
@@ -133,6 +135,7 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True
     )
+
 
     class Meta:
         model = Title

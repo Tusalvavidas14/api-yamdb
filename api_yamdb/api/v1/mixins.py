@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 
@@ -40,3 +40,12 @@ class CustomUserViewSet(
     viewsets.GenericViewSet
 ):
     pass
+
+class NoPutMixin:
+    """Миксин запрещающий PUT запросы."""
+
+    def update(self, request, *args, **kwargs):
+        return Response(
+            {'detail': 'Метод PUT не разрешен. Используйте PATCH.'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )

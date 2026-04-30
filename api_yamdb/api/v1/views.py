@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
 
 from .filters import TitleFilter
-from .mixins import CustomUserViewSet
+from .mixins import CustomUserViewSet, NoPutMixin
 from .permissions import ( 
 IsAdminOrReadOnlyPermission as IsAdminOrReadOnly,
 IsAdminPermission as IsAdmin,
@@ -88,8 +88,12 @@ class UserViewSet(CustomUserViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role)
-
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def perform_update(self, serializer):
+        """Обновление пользователя."""
+        serializer.save()
+
 
 
 class CategoryViewSet(
@@ -128,6 +132,8 @@ class GenreViewSet(
 
 class TitleViewSet(viewsets.ModelViewSet):
     """ViewSet для произведений."""
+    
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
     queryset = Title.objects.annotate(rating=Avg("reviews__score"))
     filter_backends = (
         DjangoFilterBackend,
@@ -138,17 +144,19 @@ class TitleViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
     ordering = ('name',)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
         """Выбор сериализатора в зависимости от действия."""
         if self.action in ('create', 'update', 'partial_update'):
             return TitleCreateUpdateSerializer
         return TitleSerializer
-
+    
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для отзывов."""
 
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
     
@@ -170,6 +178,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet для комментариев."""
 
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
 
