@@ -172,7 +172,7 @@ class ReviewViewSet(BaseCRUDViewSet):
 
 class CommentViewSet(BaseCRUDViewSet):
     """ViewSet для комментариев."""
-    
+
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
 

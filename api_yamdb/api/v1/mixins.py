@@ -1,4 +1,4 @@
-from rest_framework import mixins, serializers, status, viewsets
+from rest_framework import mixins, serializers, viewsets
 from rest_framework.response import Response
 
 
