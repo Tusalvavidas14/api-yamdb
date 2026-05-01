@@ -15,12 +15,8 @@ class IsAdminOrReadOnlyPermission(IsAdminPermission):
 
     Совместимо и с кастомной ролью `role='admin'`, и с django-superuser/staff.
     """
-
     def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        return super().has_permission(request, view)
+        return request.method in permissions.SAFE_METHODS or super().has_permission(request, view)
 
 
 class IsAuthorModeratorAdminOrReadOnlyPermission(BasePermission):

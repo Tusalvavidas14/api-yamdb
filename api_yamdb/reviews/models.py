@@ -2,13 +2,8 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.constants import (
-    MAX_LENGHT_NAME_IN_PROJECT,
-    MAX_SLUG_IN_PROJECT,
-    MAX_SCORE,
-    MIN_SCORE,
-    MIN_YEAR,
-)
+from api_yamdb.constants import (MAX_LENGHT_NAME_IN_PROJECT, MAX_SCORE,
+                                 MAX_SLUG_IN_PROJECT, MIN_SCORE, MIN_YEAR)
 
 from .utils import _current_year
 
